@@ -36,7 +36,7 @@ json: {
     "email": "userl@mail.com",
     "password": "12345",
     "phone": "015578646"
-}
+} 
 result : 
 {
     "success": true,

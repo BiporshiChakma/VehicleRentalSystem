@@ -14,7 +14,7 @@ Complete API reference for the Vehicle Rental System with request/response speci
 
 #### Endpoint
 ```
-POST[ /api/v1/auth/signup](https://assignment2-nine-xi.vercel.app/api/v1/auth/signup)
+POST https://assignment2-nine-xi.vercel.app/api/v1/auth/signup
 ```
 
 #### Request Body

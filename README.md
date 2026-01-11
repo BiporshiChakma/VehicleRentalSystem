@@ -1,6 +1,5 @@
-# 🌐 API Reference
+# 🌐User Menual
 
-← [Back to Main Documentation](README.md)
 
 Complete API reference for the Vehicle Rental System with request/response specifications.
 
@@ -15,7 +14,7 @@ Complete API reference for the Vehicle Rental System with request/response speci
 
 #### Endpoint
 ```
-POST /api/v1/auth/signup
+POST[ /api/v1/auth/signup](https://assignment2-nine-xi.vercel.app/api/v1/auth/signup)
 ```
 
 #### Request Body
@@ -53,7 +52,7 @@ POST /api/v1/auth/signup
 
 #### Endpoint
 ```
-POST /api/v1/auth/signin
+GET https://assignment2-nine-xi.vercel.app/api/v1/auth/login
 ```
 
 #### Request Body
@@ -93,7 +92,7 @@ POST /api/v1/auth/signin
 
 #### Endpoint
 ```
-POST /api/v1/vehicles
+POST https://assignment2-nine-xi.vercel.app/api/v1/vehicles
 ```
 
 #### Request Headers
@@ -137,7 +136,7 @@ Authorization: Bearer <jwt_token>
 
 #### Endpoint
 ```
-GET /api/v1/vehicles
+GET https://assignment2-nine-xi.vercel.app/api/v1/vehicles
 ```
 
 #### Success Response (200 OK)
@@ -184,7 +183,7 @@ GET /api/v1/vehicles
 
 #### Endpoint
 ```
-GET /api/v1/vehicles/:vehicleId
+GET https://assignment2-nine-xi.vercel.app/api/v1/vehicles/:vehicleId
 ```
 
 **Example:**
@@ -217,7 +216,7 @@ GET /api/v1/vehicles/2
 
 #### Endpoint
 ```
-PUT /api/v1/vehicles/:vehicleId
+PUT https://assignment2-nine-xi.vercel.app/api/v1/vehicles/:vehicleId
 ```
 
 **Example:**
@@ -266,7 +265,7 @@ Authorization: Bearer <jwt_token>
 
 #### Endpoint
 ```
-DELETE /api/v1/vehicles/:vehicleId
+DELETE https://assignment2-nine-xi.vercel.app/api/v1/vehicles/:vehicleId
 ```
 
 **Example:**
@@ -298,7 +297,7 @@ Authorization: Bearer <jwt_token>
 
 #### Endpoint
 ```
-GET /api/v1/users
+GET https://assignment2-nine-xi.vercel.app/api/v1/users
 ```
 
 #### Request Headers
@@ -338,7 +337,7 @@ Authorization: Bearer <jwt_token>
 
 #### Endpoint
 ```
-PUT /api/v1/users/:userId
+PUT https://assignment2-nine-xi.vercel.app/api/v1/users/:userId
 ```
 
 **Example:**
@@ -385,7 +384,7 @@ Authorization: Bearer <jwt_token>
 
 #### Endpoint
 ```
-DELETE /api/v1/users/:userId
+DELETE https://assignment2-nine-xi.vercel.app/api/v1/users/:userId
 ```
 
 **Example:**
@@ -417,7 +416,7 @@ Authorization: Bearer <jwt_token>
 
 #### Endpoint
 ```
-POST /api/v1/bookings
+POST https://assignment2-nine-xi.vercel.app/api/v1/bookings
 ```
 
 #### Request Headers
@@ -465,7 +464,7 @@ Authorization: Bearer <jwt_token>
 
 #### Endpoint
 ```
-GET /api/v1/bookings
+GET https://assignment2-nine-xi.vercel.app/api/v1/bookings
 ```
 
 #### Request Headers
@@ -532,7 +531,7 @@ Authorization: Bearer <jwt_token>
 
 #### Endpoint
 ```
-PUT /api/v1/bookings/:bookingId
+PUT https://assignment2-nine-xi.vercel.app/api/v1/bookings/:bookingId
 ```
 
 **Example:**
@@ -616,37 +615,6 @@ Authorization: Bearer <jwt_token>
   "message": "Error description",
   "errors": "Error description"
 }
-```
-
-### HTTP Status Codes Used
-| Code | Meaning | Usage |
-|------|---------|-------|
-| 200 | OK | Successful GET, PUT, DELETE |
-| 201 | Created | Successful POST (resource created) |
-| 400 | Bad Request | Validation errors, invalid input |
-| 401 | Unauthorized | Missing or invalid authentication token |
-| 403 | Forbidden | Valid token but insufficient permissions |
-| 404 | Not Found | Resource doesn't exist |
-| 500 | Internal Server Error | Unexpected server errors |
-
----
-
-## 🔒 Authentication Header Format
-
-All protected endpoints require the following header:
-
-```
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-```
-
----
-
-## 💡 Business Logic Notes
-
-### Booking Price Calculation
-```
-total_price = daily_rent_price × number_of_days
-number_of_days = rent_end_date - rent_start_date
 ```
 
 ### Vehicle Availability Updates

@@ -1,5 +1,23 @@
 import { pool } from "../../config/db";
 
+
+const createBooking = async (
+  customer_id: number,
+  vehicle_id: number,
+  rent_start_date: string,
+  rent_end_date: string,
+  total_price: number
+) => {
+  const result = await pool.query(
+    `INSERT INTO bookings
+     (customer_id, vehicle_id, rent_start_date, rent_end_date, total_price)
+     VALUES ($1, $2, $3, $4, $5)
+     RETURNING *`,
+    [customer_id, vehicle_id, rent_start_date, rent_end_date, total_price]
+  );
+
+  return result.rows[0];
+};
 const getVehicleById = async (vehicle_id: number) => {
   const result = await pool.query(
     `SELECT * FROM vehicles WHERE id = $1`,
@@ -7,6 +25,35 @@ const getVehicleById = async (vehicle_id: number) => {
   );
   return result.rows[0];
 };
+const vehicleInfo = async (id: number): Promise<any | null> => {
+  const result = await pool.query(
+    `SELECT vehicle_name, daily_rent_price, registration_number FROM vehicles  WHERE id = $1`,
+    [id]
+  );
+  const vehicle = result.rows[0];
+  return vehicle
+    ? {
+        vehicle_name: vehicle.vehicle_name,
+        daily_rent_price: Number(vehicle.daily_rent_price),
+        registration_number: vehicle.registration_number,
+      }
+    : null;
+};
+
+const customerInfo = async (id: number): Promise<any | null> => {
+  const result = await pool.query(
+    `SELECT name, email FROM users WHERE id = $1`,
+    [id]
+  );
+  const user = result.rows[0];
+  return user
+    ? {
+        name: user.name,
+        email: user.email,
+      }
+    : null;
+};
+
 
 const checkBookingOverlap = async (
   vehicle_id: number,
@@ -22,23 +69,7 @@ const checkBookingOverlap = async (
   return result.rows.length > 0;
 };
 
-const createBooking = async (
-  customer_id: number,
-  vehicle_id: number,
-  rent_start_date: string,
-  rent_end_date: string,
-  total_price: number
-) => {
-  const result = await pool.query(
-    `INSERT INTO bookings
-     (customer_id, vehicle_id, rent_start_date, rent_end_date, total_price, status)
-     VALUES ($1, $2, $3, $4, $5, true)
-     RETURNING *`,
-    [customer_id, vehicle_id, rent_start_date, rent_end_date, total_price]
-  );
 
-  return result.rows[0];
-};
 
 const getAllBookings = async () => {
   const result = await pool.query(`SELECT * FROM bookings`);
@@ -54,9 +85,6 @@ const getOwnBooking = async (customer_id: number) => {
 };
 
 export const bookingService = {
-  getVehicleById,
-  checkBookingOverlap,
-  createBooking,
-  getAllBookings,
-  getOwnBooking
+  getVehicleById,checkBookingOverlap, createBooking,getAllBookings,getOwnBooking,vehicleInfo,
+  customerInfo
 };

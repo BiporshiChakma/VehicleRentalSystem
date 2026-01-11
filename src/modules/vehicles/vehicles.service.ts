@@ -1,18 +1,18 @@
 import { pool } from "../../config/db";
 import { QueryResult } from "pg";
 
-
-const addVehicles = async(vehicle_name:any, type:any,  registration_number:any,daily_rent_price:any)=>{
+ 
+const addVehicles = async(vehicle_name:any, type:any,  registration_number:any,daily_rent_price:any,availability_status:any)=>{
     const result = await pool.query(
-          `INSERT INTO vehicles(vehicle_name, type,  registration_number,daily_rent_price) VALUES($1,$2,$3,$4) RETURNING *`,
-          [vehicle_name, type,  registration_number,daily_rent_price]
+          `INSERT INTO vehicles(vehicle_name, type,  registration_number,daily_rent_price,availability_status) VALUES($1,$2,$3,$4,$5) RETURNING *`,
+          [vehicle_name, type,  registration_number,daily_rent_price,availability_status]
         );
         return result;
 };
 
 const getVehicles = async()=>{
     const result = await pool.query("SELECT * FROM vehicles");
-    return result;
+    return result.rows;
 }
 
 const singleVehicle = async(vehicleId:any)=>{
@@ -22,11 +22,13 @@ const singleVehicle = async(vehicleId:any)=>{
     );
     return result;
 };
-const updateVehicle = async ( id: any,vehicle_name: string,type: string,registration_number: string,daily_rent_price:string
+const updateVehicle = async ( id: any,vehicle_name: string,type: string,registration_number: string,
+  daily_rent_price:string, availability_status:any
+
 ) => {
   const result = await pool.query(
-    `UPDATE vehicles SET vehicle_name = $1, type = $2, registration_number = $3,daily_rent_price=$4 updated_at = NOW() WHERE id = $5 RETURNING *`,
-    [vehicle_name, type, registration_number,daily_rent_price, id]
+    `UPDATE vehicles SET vehicle_name = $1, type = $2, registration_number = $3,daily_rent_price=$4,availability_status=$5,  updated_at = NOW() WHERE id = $6 RETURNING *`,
+    [vehicle_name, type, registration_number,daily_rent_price,availability_status, id]
   );
 
   return result;

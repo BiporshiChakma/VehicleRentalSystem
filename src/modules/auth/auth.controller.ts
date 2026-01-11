@@ -3,16 +3,17 @@ import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 
 const singup = async (req: Request, res: Response) => {
-  const { name,role, email, password,phone } = req.body;
+  const { name,email, password,phone,role} = req.body;
 
   const hashedPass = await bcrypt.hash(password as string,10);
 
   try {
-    const result = await authService.createUser(name,role,email,hashedPass,phone);
+    const result = await authService.createUser(name,email,hashedPass,phone,role);
 
     res.status(201).json({
       success: true,
-      user: result.rows[0],
+       message : "User registered successfully",
+       user: result.rows[0],
     });
   } catch (err) {
     console.error(err);

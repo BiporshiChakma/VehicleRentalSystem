@@ -11,10 +11,10 @@ const initDB = async () => {
       CREATE TABLE IF NOT EXISTS Users(
         id SERIAL PRIMARY KEY,
         name VARCHAR(100) NOT NULL,
-        role VARCHAR(50) NOT NULL,
         email VARCHAR(150) UNIQUE NOT NULL,
         password TEXT NOT NULL,
         phone VARCHAR(15),
+        role VARCHAR(50) NOT NULL,
         created_at TIMESTAMP DEFAULT NOW(),
         updated_at TIMESTAMP DEFAULT NOW()
       );
@@ -34,19 +34,19 @@ const initDB = async () => {
     `); 
 
     await pool.query(`
-      CREATE TABLE IF NOT EXISTS Bookings(
-        id SERIAL PRIMARY KEY,
-        customer_id INT REFERENCES users(id) ON DELETE CASCADE,
-        customer_email VARCHAR(150) REFERENCES users(email) ON DELETE CASCADE,
-        vehicle_id INT REFERENCES vehicles(id) ON DELETE CASCADE,
-        rent_start_date TIMESTAMP DEFAULT NOW(),
-        rent_end_date TIMESTAMP DEFAULT NOW(),
-        total_price NUMERIC,
-        status BOOLEAN DEFAULT true,
-        created_at TIMESTAMP DEFAULT NOW(),
-        updated_at TIMESTAMP DEFAULT NOW()
-      );
-    `);
+      CREATE TABLE IF NOT EXISTS bookings (
+  id SERIAL PRIMARY KEY,
+  customer_id INT REFERENCES users(id) ON DELETE CASCADE,
+  vehicle_id INT REFERENCES vehicles(id) ON DELETE CASCADE,
+  rent_start_date DATE NOT NULL,
+  rent_end_date DATE NOT NULL,
+  total_price NUMERIC,
+  status BOOLEAN DEFAULT true,
+   vehicle BOOLEAN DEFAULT true,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+`);
   } catch (err) {
     console.error("Error creating tables:", err);
   }

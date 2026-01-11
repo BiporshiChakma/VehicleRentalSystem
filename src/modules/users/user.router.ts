@@ -5,7 +5,7 @@ import logger from "../../middleware/logger";
 const router = express.Router();
 
 router.get("/",logger,auth("admin"),userController.getAllUser);
-router.put("/:id",logger,auth("admin","user"),userController.updateUsers);
+router.put("/:id",logger,auth("admin","customer"),userController.updateUsers);
 router.delete("/:id",logger,auth("admin"),userController.deleteUsers);
 
-export const userRoutes = router; 
+export const userRoutes = router;   

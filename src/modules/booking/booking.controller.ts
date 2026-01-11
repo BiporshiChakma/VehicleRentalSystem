@@ -3,8 +3,7 @@ import { bookingService } from "./booking.service";
 import { pool } from "../../config/db";
 
 const booking = async (req: Request, res: Response) => {
-  const customer_id = req.User?.id; 
-  const { vehicle_id, rent_start_date, rent_end_date } = req.body;
+  const { customer_id, vehicle_id, rent_start_date, rent_end_date } = req.body;
 
   if (!customer_id) {
     return res.status(401).json({
@@ -14,9 +13,7 @@ const booking = async (req: Request, res: Response) => {
   }
 
   try {
-    
     const vehicle = await bookingService.getVehicleById(vehicle_id);
-  //  console.log(vehicle);
     if (!vehicle) {
       return res.status(404).json({
         success: false,
@@ -24,21 +21,17 @@ const booking = async (req: Request, res: Response) => {
       });
     }
 
-    
-    if (vehicle.status === true) {
+ 
+    if (vehicle.availability_status === false) {
       return res.status(409).json({
         success: false,
         message: "Vehicle already booked",
       });
     }
 
-  
-    const isOverlapping = await bookingService.checkBookingOverlap(
-      vehicle_id,
-      rent_start_date,
-      rent_end_date
-    );
 
+    const isOverlapping = await bookingService.checkBookingOverlap( vehicle_id, rent_start_date,rent_end_date
+    );
     if (isOverlapping) {
       return res.status(409).json({
         success: false,
@@ -51,21 +44,40 @@ const booking = async (req: Request, res: Response) => {
     const days =
       Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) || 1;
 
-    const total_price = days * vehicle. daily_rent_price;
+    const total_price = days * Number(vehicle.daily_rent_price);
 
+    // Create booking
     const bookingData = await bookingService.createBooking(
       customer_id,
       vehicle_id,
-      rent_start_date,
-      rent_end_date,
+      start.toISOString().slice(0, 10), 
+      end.toISOString().slice(0, 10),
       total_price
     );
+console.log("err",bookingData)
+const formattedBooking = {
+  ...bookingData,
+  rent_start_date: new Date(bookingData.rent_start_date)
+    .toISOString()
+    .slice(0, 10),
+  rent_end_date: new Date(bookingData.rent_end_date)
+    .toISOString()
+    .slice(0, 10),
+ status : bookingData.status ? "active" : "cancelled",
+  vehicle: {
+    vehicle_name: vehicle.vehicle_name,
+    daily_rent_price: Number(vehicle.daily_rent_price),
+  },
+  created_at: new Date(bookingData.created_at).toISOString().slice(0, 10),
+    updated_at: new Date(bookingData.updated_at).toISOString().slice(0, 10),
+};
 
-    res.status(201).json({
-      success: true,
-      message: "Booking created successfully",
-      booking: bookingData,
-    });
+res.status(201).json({
+  success: true,
+  message: "Booking created successfully",
+  booking: formattedBooking,
+});
+
   } catch (error) {
     console.error(error);
     res.status(500).json({
@@ -74,34 +86,86 @@ const booking = async (req: Request, res: Response) => {
     });
   }
 };
- const getBookings = async (req: Request, res: Response) => {
+
+
+const getBookings = async (req: Request, res: Response) => {
   try {
-    let bookings;
+    console.log(req.User?.role)
+    const role = req.User?.role;
+    const userId = req.User?.id;
 
-    if (req.User?.role === "admin") {
-     
-      const result = await pool.query("SELECT * FROM bookings");
-      bookings = result.rows;
-       res.json({ success: true, bookings });
-    } else if (req.User?.role === "user") {
-  
-    const getOwnBooking = await bookingService.getOwnBooking(req.User.id);
+    if (!role || !userId) {
+      return res.status(403).json({ success: false, message: "Unauthorized" });
+    }
 
+    let bookings: any[] = [];
 
-  if (getBookings.length === 0) {
-    return res.status(404).json({ message: "Booking not found or not authorized" });
+    if (role === "admin") {
+      bookings = await bookingService.getAllBookings();
+    } else if (role === "customer") {
+  const bookings = await bookingService.getOwnBooking(userId);
+  if (!Array.isArray(bookings) || bookings.length === 0) {
+    return res.status(404).json({
+      success: false,
+      message: "No bookings found",
+    });
   }
- 
-  res.json({ success: true, getOwnBooking });
-}}catch (err) {
-    res.status(500).json({ success: false, message: "Server error" });
+ // console.log(bookin)
+  const formattedBookings = await Promise.all(
+    bookings.map(async (b: any) => ({
+     data: console.log(b.rent_start_date),
+      id: b.id,
+      customer_id: b.customer_id,
+      vehicle_id: b.vehicle_id,
+      rent_start_date: b.rent_start_date? new Date(b.rent_start_date).toISOString().slice(0, 10) : null,
+      rent_end_date: b.rent_end_date ? new Date(b.rent_end_date).toISOString().slice(0, 10) : null,
+      total_price: Number(b.total_price),
+      status: b.status ? "active" : "cancelled or returned",
+      vehicle: await bookingService.vehicleInfo(b.vehicle_id),
+      created_at: b.created_at,
+      updated_at: b.updated_at,
+    }))
+  );
+
+  return res.status(200).json({
+    success: true,
+    message: "Bookings fetched successfully",
+    bookings: formattedBookings,
+  });
+}
+
+const bookingArray: any[] = bookings;
+//console.log(bookingArray);
+const formattedBookings = await Promise.all(
+  bookingArray.map(async (b) => ({
+    date: console.log( new Date(b.rent_start_date).toISOString().slice(0, 10) ),
+    id: b.id,
+    customer_id: b.customer_id,
+    vehicle_id: b.vehicle_id,
+   rent_start_date: new Date(b.rent_start_date).toISOString().slice(0, 10),
+  rent_end_date: new Date(b.rent_end_date).toISOString().slice(0, 10),
+    
+    total_price: Number(b.total_price),
+    status: b.status ? "active" : "cancelled",
+    customer: await bookingService.customerInfo(b.customer_id),
+    vehicle: await bookingService.vehicleInfo(b.vehicle_id),
+  }))
+);
+    return res.status(200).json({
+      success: true,
+      message: "Bookings fetched successfully",
+      bookings: formattedBookings,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ success: false, message: "Server error", error });
   }
 };
 
 const updateBooking = async (req: Request, res: Response) => {
   const bookingId = Number(req.params.id);
-  console.log(req.User);
-  console.log(req.User?.role );
+  // console.log(req.User);
+   console.log(req.User?.role );
   if (isNaN(bookingId)) {
     return res.status(400).json({
       success: false,
@@ -112,18 +176,27 @@ const updateBooking = async (req: Request, res: Response) => {
   try {
     if (req.User?.role === "admin") {
       const { status } = req.body;
+      let bol: boolean;
       
-      if (typeof status !== "boolean") {
-        return res.status(400).json({
-          success: false,
-          message: "Status must be boolean",
-        });
+      if (status === "active") {
+       bol = true;
       }
+     else if(status === "returned"){
+       bol = false;
+     }
+     else{
+       return res.status(400).json({
+          success: false,
+          message: "Status must be returned",
+        });
+     }
 
       const bookingResult = await pool.query(
         "SELECT * FROM bookings WHERE id = $1",
         [bookingId]
       );
+      
+
 
       if (bookingResult.rows.length === 0) {
         return res.status(404).json({
@@ -133,22 +206,53 @@ const updateBooking = async (req: Request, res: Response) => {
       }
 
       const booking = bookingResult.rows[0];
+      
+        if (booking.status === false) {
+    return res.status(400).json({
+      success: false,
+      message: "Booking already cancelled",
+    });
+  }
       await pool.query(
-        "UPDATE bookings SET status = $1, updated_at = NOW() WHERE id = $2",
-        [status, bookingId]
+        "UPDATE bookings SET status = $1,vehicle=$2, updated_at = NOW() WHERE id = $3",
+        [bol,bol, bookingId]
       );
       await pool.query(
         "UPDATE vehicles SET availability_status = $1 WHERE id = $2",
-        [!status, booking.vehicle_id]
+        [!bol, booking.vehicle_id]
       );
-
+        console.log(booking.status)
+      const bookingFormate = {
+         ...booking,
+          rent_start_date: new Date(booking.rent_start_date).toISOString().slice(0, 10),
+          rent_end_date: new Date(booking.rent_end_date).toISOString().slice(0, 10),
+         status: booking.status = "returned" ,
+         vehicle: booking.vehicle ? "unavailable" : "available" 
+        };
       return res.status(200).json({
         success: true,
-        message: "Booking updated by admin",
+        message: "Booking cancelled successfully",
+        data: bookingFormate
+      
       });
     }
   //  console.log("JWT USER:", req.User);
-    if (req.User?.role === "user") {
+    if (req.User?.role === "customer") {
+       const { status } = req.body;
+        let bol: boolean;
+      
+      if (status === "active") {
+       bol = true;
+      }
+     else if(status === "cancelled"){
+       bol = false;
+     }
+     else{
+       return res.status(400).json({
+          success: false,
+          message: "Only Admin Returns The Booking.IF you donot want,You should canclled the Booking",
+        });
+     }
   const result = await pool.query(
     "SELECT * FROM bookings WHERE id = $1 AND customer_id = $2",
     [bookingId, req.User.id]
@@ -170,39 +274,38 @@ const updateBooking = async (req: Request, res: Response) => {
       message: "Rent start date not set yet",
     });
   }
-
+  console.log("test",booking)
   if (booking.status === false) {
     return res.status(400).json({
       success: false,
       message: "Booking already cancelled",
+      data: booking
     });
   }
 
-  if (new Date(booking.rent_start_date).getTime() <= Date.now()) {
-    return res.status(400).json({
-      success: false,
-      message: "Cannot cancel after start date",
-    });
-  }
 
-  await pool.query("BEGIN");
+   await pool.query(
+        "UPDATE bookings SET status = $1,vehicle=$2, updated_at = NOW() WHERE id = $3",
+        [bol,bol, bookingId]
+      );
+      await pool.query(
+        "UPDATE vehicles SET availability_status = $1 WHERE id = $2",
+        [!bol, booking.vehicle_id]
+      );
 
-  await pool.query(
-    "UPDATE bookings SET status = false, updated_at = NOW() WHERE id = $1",
-    [bookingId]
-  );
-
-  await pool.query(
-    "UPDATE vehicles SET availability_status = true WHERE id = $1",
-    [booking.vehicle_id]
-  );
-
-  await pool.query("COMMIT");
-
-  return res.status(200).json({
-    success: true,
-    message: "Booking cancelled successfully",
-  });
+const bookingFormate = {
+         ...booking,
+          rent_start_date: new Date(booking.rent_start_date).toISOString().slice(0, 10),
+          rent_end_date: new Date(booking.rent_end_date).toISOString().slice(0, 10),
+         status: booking.status = "cancelled" ,
+         vehicle: booking.vehicle ? "unavailable" : "available" 
+        };
+      return res.status(200).json({
+        success: true,
+        message: "Booking cancelled successfully",
+        data: bookingFormate
+      
+      });
 }
 
     return res.status(403).json({
@@ -222,3 +325,4 @@ const updateBooking = async (req: Request, res: Response) => {
 export const bookingController = {
   booking,getBookings,updateBooking
 };
+ 

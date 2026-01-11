@@ -10,4 +10,4 @@ router.get("/",logger,auth(),vehicleController.getVehicles);
 router.get("/:vehicleId",logger,auth(),vehicleController.singleVehicle);
 router.put("/:vehicleId",logger,auth("admin"),vehicleController.updateVehicle);
 router.delete("/:vehicleId",logger,auth("admin"),vehicleController.deleteVehicle);
-export const vehicleRoute = router; 
+export const vehicleRoute = router;  

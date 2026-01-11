@@ -7,6 +7,7 @@ import { userService } from "./user.service";
 
     res.status(200).json({
       success: true,
+      message: "Users retrieved successfully",
       data: result.rows
     });
   } catch (error) {
@@ -20,11 +21,11 @@ import { userService } from "./user.service";
 
 const updateUsers = async (req: Request, res: Response) => {
   const id = Number(req.params.id);
-  const { name, role,  password, phone } = req.body;
+  const { name,  email, phone, role} = req.body;
 
   try {
-    if (
-      req.User?.role === "user" &&
+    if ( 
+      req.User?.role === "customer" &&
       req.User.id !== id
     ) {
       return res.status(403).json({
@@ -36,10 +37,9 @@ const updateUsers = async (req: Request, res: Response) => {
     let result;
 
     if (req.User?.role === "admin") {
-      result = await userService.updatAllUser( name,role,password,phone,id
-      );
+      result = await userService.updatAllUser( name,email, phone, role,id);
     } else {
-      result = await userService.updatUser(name, password,phone, id );
+      result = await userService.updatUser(name, email, phone, id);
     }
 
     if (result.rowCount === 0) {
@@ -48,11 +48,16 @@ const updateUsers = async (req: Request, res: Response) => {
         message: "User not found",
       });
     }
-
+      const rest = result.rows[0];
     res.status(200).json({
       success: true,
       message: "User updated successfully",
-      data: result.rows[0],
+    data:{
+      ...rest,
+       created_at: new Date(rest.created_at).toISOString().slice(0, 10),
+    updated_at: new Date(rest.updated_at).toISOString().slice(0, 10),
+    }
+     
     });
 
   } catch (error) {
@@ -80,7 +85,7 @@ const deleteUsers = async (req: Request, res: Response) => {
     res.status(200).json({
       success: true,
       message: "User deleted successfully",
-      data: result.rows[0],
+
     });
   } catch (error) {
     console.error(error);

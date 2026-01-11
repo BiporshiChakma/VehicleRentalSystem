@@ -6,7 +6,7 @@ import config from "../../config";
 
 const createUser = async(name:any,role:any,email:any,hashedPass:any,phone:any)=>{
     const result = await pool.query(
-          `INSERT INTO users(name,role,email,password,phone) VALUES($1,$2,$3,$4,$5) RETURNING *`,
+          `INSERT INTO users(name,email,password,phone,role) VALUES($1,$2,$3,$4,$5) RETURNING *`,
           [name,role, email, hashedPass,phone]
         );
         return result;

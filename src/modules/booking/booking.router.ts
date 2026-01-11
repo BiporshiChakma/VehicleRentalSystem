@@ -6,6 +6,6 @@ import { bookingController } from "./booking.controller";
 const router = express.Router();
 
 router.post("/",logger,auth(),bookingController.booking);
-router.get("/", logger, auth("admin", "user"), bookingController.getBookings);
-router.put("/:id", logger, auth("admin", "user"), bookingController.updateBooking);
-export const bookingRoutes = router;  
+router.get("/", logger, auth("admin", "customer"), bookingController.getBookings);
+router.put("/:id", logger, auth("admin", "customer"), bookingController.updateBooking);
+export const bookingRoutes = router;   
